@@ -1,0 +1,32 @@
+name: Build App (Debug)
+
+on:
+  push:
+    branches: [ master ]
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: '8.0.x'
+
+    - name: Publish WPF App (Debug)
+      run: |
+        dotnet publish WinIsland/WinIsland.csproj -c Debug -o ./publish
+
+    - name: Zip Output Files (Debug)
+      run: |
+        Compress-Archive -Path ./publish/* -DestinationPath ./WI-Debug.zip
+
+    - name: Upload Zip Artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: WpfApp-Package
+        path: ./WI-Debug.zip

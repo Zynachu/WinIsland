@@ -48,7 +48,7 @@ namespace WinIsland.IslandPages
             }
             MainWindow.instance.busyRing.Visibility = Visibility.Visible;
             getMediaSession();
-            Tick.Interval = new TimeSpan(0, 0, 0, 0, 1);
+            Tick.Interval = new TimeSpan(0, 0, 0, 1);
             Tick.Tick += (e, a) =>
             {
                 if (mw.sessionManager != null)

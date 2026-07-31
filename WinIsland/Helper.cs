@@ -84,20 +84,45 @@ namespace WinIsland
         public static System.Windows.Media.Color CalculateAverageColor(Bitmap bm)
         {
             Stopwatch calcDuration = MainWindow.logger.startCounter();
-            if (bm == null) return System.Windows.Media.Color.FromRgb(0,0,0);
+            if (bm == null) return System.Windows.Media.Color.FromRgb(0, 0, 0);
             MainWindow.logger.log("Getting average color...");
-            int width = bm.Width;
-            int height = bm.Height;
+
+            // Downsample to image for faster processing
+            int targetSize = 50;
+            Bitmap downsampledBm;
+
+            if (bm.Width > targetSize || bm.Height > targetSize)
+            {
+                MainWindow.logger.log($"[CalculateAverageColor] Downsampling from {bm.Width}x{bm.Height} to {targetSize}x{targetSize}");
+                downsampledBm = new Bitmap(targetSize, targetSize);
+                using (Graphics g = Graphics.FromImage(downsampledBm))
+                {
+                    g.InterpolationMode = System.Drawing.Drawing2D.InterpolationMode.Low;
+                    g.CompositingQuality = System.Drawing.Drawing2D.CompositingQuality.HighSpeed;
+                    g.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.HighSpeed;
+                    g.DrawImage(bm, 0, 0, targetSize, targetSize);
+                }
+            }
+            else
+            {
+                downsampledBm = bm;
+            }
+
+            int width = downsampledBm.Width;
+            int height = downsampledBm.Height;
             int red = 0;
             int green = 0;
             int blue = 0;
-            int minDiversion = 15; // drop pixels that do not differ by at least minDiversion between color values (white, gray or black)
-            int dropped = 0; // keep track of dropped pixels
+            int minDiversion = 15;
+            int dropped = 0;
             long[] totals = new long[] { 0, 0, 0 };
-            int bppModifier = bm.PixelFormat == System.Drawing.Imaging.PixelFormat.Format24bppRgb ? 3 : 4; // cutting corners, will fail on anything else but 32 and 24 bit images
+            int bppModifier = downsampledBm.PixelFormat == System.Drawing.Imaging.PixelFormat.Format24bppRgb ? 3 : 4;
 
             MainWindow.logger.log("[CalculateAverageColor] Locking BitmapBits...");
-            BitmapData srcData = bm.LockBits(new System.Drawing.Rectangle(0, 0, bm.Width, bm.Height), ImageLockMode.ReadOnly, bm.PixelFormat);
+            BitmapData srcData = downsampledBm.LockBits(
+                new System.Drawing.Rectangle(0, 0, downsampledBm.Width, downsampledBm.Height),
+                ImageLockMode.ReadOnly,
+                downsampledBm.PixelFormat);
             int stride = srcData.Stride;
             IntPtr Scan0 = srcData.Scan0;
 
@@ -128,6 +153,13 @@ namespace WinIsland
                 }
             }
 
+            downsampledBm.UnlockBits(srcData);
+            
+            if (downsampledBm != bm)
+            {
+                downsampledBm.Dispose();
+            }
+
             int count = width * height - dropped;
             int avgR, avgB, avgG;
             if (totals[2] != 0)
@@ -142,12 +174,252 @@ namespace WinIsland
                 avgB = (int)(totals[0] / count);
             else
                 avgB = 255;
-            MainWindow.logger.log("[CalculateAverageColor] Color succesfully calculated, unlocking...");
-            bm.UnlockBits(srcData);
-            MainWindow.logger.log("[CalculateAverageColor] Color Data: R:" + Convert.ToByte(avgR) + " G: " + Convert.ToByte(avgG) + " B: " + Convert.ToByte(avgB));
+            MainWindow.logger.log("[CalculateAverageColor] Color successfully calculated.");
+      
+            MainWindow.logger.log("[CalculateAverageColor] Color Data: R:" +
+            Convert.ToByte(avgR) + " G: " + Convert.ToByte(avgG) + " B: " +
+            Convert.ToByte(avgB));
             MainWindow.logger.stopCounter(calcDuration, "CalculateAverageColor");
             return System.Windows.Media.Color.FromRgb(Convert.ToByte(avgR), Convert.ToByte(avgG), Convert.ToByte(avgB));
         }
+
+        public static Bitmap CreateBlurredBitmap(Bitmap source, int blurRadius)
+        {
+            if (source == null) return null;
+            if (blurRadius <= 0) return source;
+
+            Stopwatch blurDuration = MainWindow.logger.startCounter();
+            MainWindow.logger.log($"[CreateBlurredBitmap] Creating blurred bitmap with radius {blurRadius}");
+
+            // Downsample for better performance - blur works fine on smaller images
+            int targetWidth = 100;  // Reasonable size for background
+            int targetHeight = (int)(source.Height * (targetWidth / (float)source.Width));
+
+            Bitmap resized = new Bitmap(targetWidth, targetHeight);
+            using (Graphics g = Graphics.FromImage(resized))
+            {
+                g.InterpolationMode = System.Drawing.Drawing2D.InterpolationMode.HighQualityBicubic;
+                g.DrawImage(source, 0, 0, targetWidth, targetHeight);
+            }
+
+            //Bitmap blurred = ApplyBoxBlur(resized, blurRadius);
+            int scaledRadius = Math.Max(1, (int)(blurRadius * (targetWidth / (float)source.Width)));
+            Bitmap blurred = ApplyGaussianBlur(resized, scaledRadius);
+
+            resized.Dispose();
+
+            MainWindow.logger.stopCounter(blurDuration, "CreateBlurredBitmap");
+            return blurred;
+        }
+        private static Bitmap ApplyGaussianBlur(Bitmap source, int radius)
+        {
+            if (radius < 1) return source;
+
+            // Generate Gaussian kernel
+            double sigma = radius / 3.0; // Standard deviation
+            int kernelSize = radius * 2 + 1;
+            double[,] kernel = CreateGaussianKernel(kernelSize, sigma);
+
+            Bitmap result = new Bitmap(source.Width, source.Height, PixelFormat.Format32bppArgb);
+
+            BitmapData srcData = source.LockBits(
+                new System.Drawing.Rectangle(0, 0, source.Width, source.Height),
+                ImageLockMode.ReadOnly,
+                PixelFormat.Format32bppArgb);
+
+            BitmapData dstData = result.LockBits(
+                new System.Drawing.Rectangle(0, 0, result.Width, result.Height),
+                ImageLockMode.WriteOnly,
+                PixelFormat.Format32bppArgb);
+
+            int width = source.Width;
+            int height = source.Height;
+            int stride = srcData.Stride;
+
+            unsafe
+            {
+                byte* srcPtr = (byte*)srcData.Scan0;
+                byte* dstPtr = (byte*)dstData.Scan0;
+
+                // Apply Gaussian blur
+                for (int y = 0; y < height; y++)
+                {
+                    for (int x = 0; x < width; x++)
+                    {
+                        double r = 0, g = 0, b = 0, a = 0;
+
+                        for (int ky = -radius; ky <= radius; ky++)
+                        {
+                            for (int kx = -radius; kx <= radius; kx++)
+                            {
+                                int px = Math.Max(0, Math.Min(width - 1, x + kx));
+                                int py = Math.Max(0, Math.Min(height - 1, y + ky));
+
+                                int idx = py * stride + px * 4;
+                                double weight = kernel[ky + radius, kx + radius];
+
+                                b += srcPtr[idx] * weight;
+                                g += srcPtr[idx + 1] * weight;
+                                r += srcPtr[idx + 2] * weight;
+                                a += srcPtr[idx + 3] * weight;
+                            }
+                        }
+
+                        int dstIdx = y * stride + x * 4;
+                        dstPtr[dstIdx] = (byte)Math.Min(255, Math.Max(0, b));
+                        dstPtr[dstIdx + 1] = (byte)Math.Min(255, Math.Max(0, g));
+                        dstPtr[dstIdx + 2] = (byte)Math.Min(255, Math.Max(0, r));
+                        dstPtr[dstIdx + 3] = (byte)Math.Min(255, Math.Max(0, a));
+                    }
+                }
+            }
+
+            source.UnlockBits(srcData);
+            result.UnlockBits(dstData);
+
+            return result;
+        }
+
+        private static double[,] CreateGaussianKernel(int size, double sigma)
+        {
+            double[,] kernel = new double[size, size];
+            double sum = 0;
+            int radius = size / 2;
+
+            for (int y = -radius; y <= radius; y++)
+            {
+                for (int x = -radius; x <= radius; x++)
+                {
+                    double exponent = -(x * x + y * y) / (2 * sigma * sigma);
+                    double value = Math.Exp(exponent) / (2 * Math.PI * sigma * sigma);
+                    kernel[y + radius, x + radius] = value;
+                    sum += value;
+                }
+            }
+
+            // Normalize the kernel
+            for (int y = 0; y < size; y++)
+            {
+                for (int x = 0; x < size; x++)
+                {
+                    kernel[y, x] /= sum;
+                }
+            }
+
+            return kernel;
+        }
+
+        private static Bitmap ApplyBoxBlur(Bitmap source, int radius)
+        {
+            if (radius < 1) return source;
+
+            Bitmap result = new Bitmap(source.Width, source.Height,
+                PixelFormat.Format32bppArgb);
+
+            BitmapData srcData = source.LockBits(
+                new System.Drawing.Rectangle(0, 0, source.Width, source.Height),
+                ImageLockMode.ReadOnly,
+                PixelFormat.Format32bppArgb);
+
+            BitmapData dstData = result.LockBits(
+                new System.Drawing.Rectangle(0, 0, result.Width, result.Height),
+                ImageLockMode.WriteOnly,
+                PixelFormat.Format32bppArgb);
+
+            int width = source.Width;
+            int height = source.Height;
+            int stride = srcData.Stride;
+
+            unsafe
+            {
+                byte* srcPtr = (byte*)srcData.Scan0;
+                byte* dstPtr = (byte*)dstData.Scan0;
+
+                // Horizontal pass
+                for (int y = 0; y < height; y++)
+                {
+                    for (int x = 0; x < width; x++)
+                    {
+                        int r = 0, g = 0, b = 0, a = 0, count = 0;
+
+                        for (int kx = -radius; kx <= radius; kx++)
+                        {
+                            int px = x + kx;
+                            if (px >= 0 && px < width)
+                            {
+                                int idx = y * stride + px * 4;
+                                b += srcPtr[idx];
+                                g += srcPtr[idx + 1];
+                                r += srcPtr[idx + 2];
+                                a += srcPtr[idx + 3];
+                                count++;
+                            }
+                        }
+
+                        int dstIdx = y * stride + x * 4;
+                        dstPtr[dstIdx] = (byte)(b / count);
+                        dstPtr[dstIdx + 1] = (byte)(g / count);
+                        dstPtr[dstIdx + 2] = (byte)(r / count);
+                        dstPtr[dstIdx + 3] = (byte)(a / count);
+                    }
+                }
+            }
+
+            source.UnlockBits(srcData);
+            result.UnlockBits(dstData);
+
+            Bitmap finalResult = new Bitmap(result.Width, result.Height, PixelFormat.Format32bppArgb);
+            BitmapData tmpData = result.LockBits(
+                new System.Drawing.Rectangle(0, 0, result.Width, result.Height),
+                ImageLockMode.ReadOnly,
+                PixelFormat.Format32bppArgb);
+            BitmapData finalData = finalResult.LockBits( 
+                new System.Drawing.Rectangle(0, 0, finalResult.Width, finalResult.Height),
+                ImageLockMode.WriteOnly,
+                PixelFormat.Format32bppArgb);
+
+            unsafe
+            {
+                byte* tmpPtr = (byte*)tmpData.Scan0;
+                byte* finalPtr = (byte*)finalData.Scan0;
+
+                // Vertical pass
+                for (int y = 0; y < height; y++)
+                {
+                    for (int x = 0; x < width; x++)
+                    {
+                        int r = 0, g = 0, b = 0, a = 0, count = 0;
+
+                        for (int ky = -radius; ky <= radius; ky++)
+                        {
+                            int py = y + ky;
+                            if (py >= 0 && py < height)
+                            {
+                                int idx = py * stride + x * 4;
+                                b += tmpPtr[idx];
+                                g += tmpPtr[idx + 1];
+                                r += tmpPtr[idx + 2];
+                                a += tmpPtr[idx + 3];
+                                count++;
+                            }
+                        }
+
+                        int dstIdx = y * stride + x * 4;
+                        finalPtr[dstIdx] = (byte)(b / count);
+                        finalPtr[dstIdx + 1] = (byte)(g / count);
+                        finalPtr[dstIdx + 2] = (byte)(r / count);
+                        finalPtr[dstIdx + 3] = (byte)(a / count);
+                    }
+                }
+            }
+
+            result.UnlockBits(tmpData);
+            finalResult.UnlockBits(finalData);
+            result.Dispose();
+
+            return finalResult;
+        }
+
         public static Bitmap getImageFromUrl(string imageUrl, ImageFormat format)
         {
             WebClient client = new WebClient();

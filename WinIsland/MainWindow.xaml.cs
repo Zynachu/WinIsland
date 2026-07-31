@@ -234,11 +234,10 @@ namespace WinIsland
         }
         public void renderBackground(Bitmap bmp)
         {
-            bg.Source = Helper.ConvertToImageSource(bmp);
-            BlurEffect be = new BlurEffect();
-            be.Radius = settings.config.ambientBGBlur;
-            be.RenderingBias = RenderingBias.Performance;
-            bg.Effect = be;
+            Bitmap blurredBitmap = Helper.CreateBlurredBitmap(bmp, (int)settings.config.ambientBGBlur);
+            bg.Source = Helper.ConvertToImageSource(blurredBitmap);
+            bg.Effect = null;
+            blurredBitmap.Dispose();
         }
 
         BlurEffect be = new BlurEffect { Radius = 0, RenderingBias = RenderingBias.Performance };
@@ -250,7 +249,7 @@ namespace WinIsland
             Focus();
             tick = new DispatcherTimer();
             tick.Tick += Tick_Tick;
-            tick.Interval = new TimeSpan(0, 0, 0, 3, 0);
+            tick.Interval = new TimeSpan(0, 0, 0, 3);
             tick.Start();
             firstPos = Left;
             //MakeWindowClickThrough(false);

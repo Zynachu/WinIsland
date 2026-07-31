@@ -357,7 +357,27 @@ namespace WinIsland.IslandPages
                 });
             }
             catch(NullReferenceException nuEx){
-                // TODO: Do something here.
+                this.Dispatcher.Invoke(() =>
+                {
+                    Dispatcher.Invoke(() =>
+                    {
+                        sliderChangeIgnore = true;
+                        songProgress.Maximum = 0;
+                        songProgress.Value = 0;
+                        songProgressLabel.Content = "00:00 / 00:00";
+
+                        Settings.instance.lastMaxTick = 0;
+                        Settings.instance.lastCurTick = 0;
+                        Settings.instance.lastDuration =  "00:00 / 00:00";
+
+                        sliderChangeIgnore = false;
+                    });
+
+                    songTitle.Text = "No media playing.";
+                    songArtist.Text = "WinIsland by Charamellized.";
+                    songThumbnail.Source = null;
+                    toggleMediaControls(false);
+                });
             }
             catch(COMException comEx)
             {

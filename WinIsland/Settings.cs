@@ -76,7 +76,7 @@ namespace WinIsland
                 blurEverywhere = false,
                 ambientBGBlur = 40,
                 cornerRadius = 10,
-                clockHidden = true,
+                clockHidden = false,
                 batteryHidden = true,
                 lat = "-7.9797",
                 lon = "112.6308",

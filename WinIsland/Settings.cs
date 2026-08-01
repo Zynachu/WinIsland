@@ -70,7 +70,7 @@ namespace WinIsland
         }
         private void loadDefaultValues()
         {
-            MainWindow.logger.log("Settings file invalid or missing, creating a new one...");
+            MainWindow.logger.logCritical("Settings file invalid or missing, creating a new one...");
             config = new SettingsConfig
             {
                 blurEverywhere = false,
@@ -78,6 +78,7 @@ namespace WinIsland
                 cornerRadius = 10,
                 clockHidden = false,
                 batteryHidden = true,
+                verboseLog = false,
                 lat = "-7.9797",
                 lon = "112.6308",
                 city = "Malang",
@@ -90,6 +91,7 @@ namespace WinIsland
             public bool blurEverywhere { get; set; }
             public bool clockHidden { get; set; }
             public bool batteryHidden { get; set; }
+            public bool verboseLog { get; set; }
 
             public float ambientBGBlur { get; set; }
 
@@ -101,3 +103,4 @@ namespace WinIsland
         }
     }
 }
+

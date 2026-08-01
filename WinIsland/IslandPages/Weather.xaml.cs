@@ -96,8 +96,8 @@ namespace WinIsland.IslandPages
                         MainWindow.logger.log("Converted to JsonNode successfully!");
                         if (resp.Contains("\"reason\":"))
                         {
-							MainWindow.logger.log("Failed !");
-                            MainWindow.logger.log(node["reason"].ToString());
+							MainWindow.logger.logCritical("Failed !");
+                            MainWindow.logger.logCritical(node["reason"].ToString());
 
                             Dispatcher.Invoke(() =>
                             {
@@ -114,9 +114,9 @@ namespace WinIsland.IslandPages
                     }
                     catch(Exception err)
                     {
-                        MainWindow.logger.log("Failed !");
-                        MainWindow.logger.log(err.Message);
-                        MainWindow.logger.log(err.StackTrace);
+                        MainWindow.logger.logCritical("Failed !");
+                        MainWindow.logger.logCritical(err.Message);
+                        MainWindow.logger.logCritical(err.StackTrace);
                     }
                 }
                 Dispatcher.Invoke(() =>
@@ -127,7 +127,7 @@ namespace WinIsland.IslandPages
         }
         private void parseWeather(JsonNode node)
         {
-            MainWindow.logger.log("Reading Icon Json Data...");
+            MainWindow.logger.logVerbose("Reading Icon Json Data...");
             string jsonIconPath = AppContext.BaseDirectory + "\\Assets\\weather.json";
             string iconJsonData = File.ReadAllText(jsonIconPath);
             JsonNode icons = JsonNode.Parse(iconJsonData);
@@ -265,3 +265,4 @@ namespace WinIsland.IslandPages
 		}
 	}
 }
+

@@ -57,7 +57,7 @@ namespace WinIsland
         // Color format: ABGR (DO NOT SPECIFY ALPHA VALUE)
         public static void setBorderColor(Window window, System.Windows.Media.Color rgb, int hexColor = 0x000000FF, Border w10Border = null)
         {
-            MainWindow.logger.log("Setting border color to " + rgb.ToString());
+            MainWindow.logger.logVerbose("Setting border color to " + rgb.ToString());
             if (isWindows11())
             {
                 IntPtr hWnd = new WindowInteropHelper(Window.GetWindow(window)).EnsureHandle();
@@ -74,7 +74,7 @@ namespace WinIsland
 
         public static int ConvertToABGR(int r, int g, int b)
         {
-            MainWindow.logger.log("Converting RGB to ABGR");
+            MainWindow.logger.logVerbose("Converting RGB to ABGR");
             string rstr = r.ToString("X");
             string gstr = g.ToString("X");
             string bstr = b.ToString("X");
@@ -85,7 +85,7 @@ namespace WinIsland
         {
             Stopwatch calcDuration = MainWindow.logger.startCounter();
             if (bm == null) return System.Windows.Media.Color.FromRgb(0, 0, 0);
-            MainWindow.logger.log("Getting average color...");
+            MainWindow.logger.logVerbose("Getting average color...");
 
             // Downsample to image for faster processing
             int targetSize = 50;
@@ -93,7 +93,7 @@ namespace WinIsland
 
             if (bm.Width > targetSize || bm.Height > targetSize)
             {
-                MainWindow.logger.log($"[CalculateAverageColor] Downsampling from {bm.Width}x{bm.Height} to {targetSize}x{targetSize}");
+                MainWindow.logger.logVerbose($"[CalculateAverageColor] Downsampling from {bm.Width}x{bm.Height} to {targetSize}x{targetSize}");
                 downsampledBm = new Bitmap(targetSize, targetSize);
                 using (Graphics g = Graphics.FromImage(downsampledBm))
                 {
@@ -118,7 +118,7 @@ namespace WinIsland
             long[] totals = new long[] { 0, 0, 0 };
             int bppModifier = downsampledBm.PixelFormat == System.Drawing.Imaging.PixelFormat.Format24bppRgb ? 3 : 4;
 
-            MainWindow.logger.log("[CalculateAverageColor] Locking BitmapBits...");
+            MainWindow.logger.logVerbose("[CalculateAverageColor] Locking BitmapBits...");
             BitmapData srcData = downsampledBm.LockBits(
                 new System.Drawing.Rectangle(0, 0, downsampledBm.Width, downsampledBm.Height),
                 ImageLockMode.ReadOnly,
@@ -128,7 +128,7 @@ namespace WinIsland
 
             unsafe
             {
-                MainWindow.logger.log("[CalculateAverageColor] Getting color...");
+                MainWindow.logger.logVerbose("[CalculateAverageColor] Getting color...");
                 byte* p = (byte*)(void*)Scan0;
 
                 for (int y = 0; y < height; y++)
@@ -174,9 +174,9 @@ namespace WinIsland
                 avgB = (int)(totals[0] / count);
             else
                 avgB = 255;
-            MainWindow.logger.log("[CalculateAverageColor] Color successfully calculated.");
+            MainWindow.logger.logVerbose("[CalculateAverageColor] Color successfully calculated.");
       
-            MainWindow.logger.log("[CalculateAverageColor] Color Data: R:" +
+            MainWindow.logger.logVerbose("[CalculateAverageColor] Color Data: R:" +
             Convert.ToByte(avgR) + " G: " + Convert.ToByte(avgG) + " B: " +
             Convert.ToByte(avgB));
             MainWindow.logger.stopCounter(calcDuration, "CalculateAverageColor");
@@ -189,7 +189,7 @@ namespace WinIsland
             if (blurRadius <= 0) return source;
 
             Stopwatch blurDuration = MainWindow.logger.startCounter();
-            MainWindow.logger.log($"[CreateBlurredBitmap] Creating blurred bitmap with radius {blurRadius}");
+            MainWindow.logger.logVerbose($"[CreateBlurredBitmap] Creating blurred bitmap with radius {blurRadius}");
 
             // Downsample for better performance - blur works fine on smaller images
             int targetWidth = 100;  // Reasonable size for background

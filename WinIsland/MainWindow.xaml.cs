@@ -77,37 +77,37 @@ namespace WinIsland
 
         public MainWindow()
         {
-            logger.log("Initializing island...");
+            logger.logCritical("Initializing island...");
             Stopwatch initDuration = logger.startCounter();
             instance = this;
             InitializeComponent();
-            logger.log("Main UI Component initialized.");
+            logger.logVerbose("Main UI Component initialized.");
 
             // PluginInit.loadAll(pluginManager);
 
             volumeSlider.Value = (double)dev.AudioEndpointVolume.MasterVolumeLevelScalar;
             volumeSlider.ValueChanged += volumeSlider_ValueChanged;
-            logger.log("Volume Slider Initialized.");
+            logger.logVerbose("Volume Slider Initialized.");
 
             StartMouseTracking();
-            logger.log("Mouse Tracker Initialized.");
+            logger.logVerbose("Mouse Tracker Initialized.");
             initPagesAndPlugins();
-            logger.log("Main Page Initialized (MusPlayer.xaml in source code)");
+            logger.logVerbose("Main Page Initialized (MusPlayer.xaml in source code)");
             toggleMediaControls(false);
-            logger.log("Media Controls has been set to false.");
+            logger.logVerbose("Media Controls has been set to false.");
             settingsButton.IsEnabled = false;
             settingsButton.Opacity = 0;
             settingsButton.Visibility = Visibility.Hidden;
             setupEvents();
-            logger.log("Events initialized.");
+            logger.logVerbose("Events initialized.");
             systemEventSmall.Visibility = Visibility.Hidden;
             sysEventTimer.Interval = 3000;
             islandContent.Visibility = Visibility.Hidden;
             contentFrame.Visibility = Visibility.Hidden;
-            logger.log("Setting UI visibility.");
+            logger.logVerbose("Setting UI visibility.");
 
-            logger.log("Main Island has been initialized.");
-            logger.stopCounter(initDuration, "MainWindow.Init");
+            logger.logCritical("Main Island has been initialized.");
+            logger.stopCounter(initDuration, "MainWindow.Init", forceLog: true);
             // Next stage: Window_Loaded
         }
         Timer sysEventTimer = new Timer();
@@ -120,7 +120,7 @@ namespace WinIsland
                         triggerSystemEvent(0, data.ChannelVolume.First());
                 }));
             };
-            logger.log("Volume event registered.");
+            logger.logVerbose("Volume event registered.");
             sysEventTimer.Elapsed += (sender, e) =>
             {
                 Dispatcher.Invoke(new Action(() => {
@@ -174,7 +174,7 @@ namespace WinIsland
                         ignoreVolumeEvent2.Start();
                     ignoreVolumeEvent2.Restart();
                     sysEventTimer.Stop();
-                    logger.log("Triggered Volume Event!");
+                    logger.logVerbose("Triggered Volume Event!");
                     ignoreMouseEvent = true;
                     smallEventShown = true;
                     BlurEffect be = new BlurEffect();
@@ -213,7 +213,7 @@ namespace WinIsland
         public void renderGradient(Bitmap bmp, string calledby = "noone")
         {
             Stopwatch renderDuration = logger.startCounter();
-            logger.log("Getting gradient... [" + calledby + "]");
+            logger.logVerbose("Getting gradient... [" + calledby + "]");
             Color color = Helper.CalculateAverageColor(bmp);
             if(ThemeManager.Current.ActualApplicationTheme == ApplicationTheme.Light)
             {
@@ -245,7 +245,7 @@ namespace WinIsland
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
             Stopwatch initCounter = logger.startCounter();
-            logger.log("Attempting to get focus.");
+            logger.logCritical("Attempting to get focus.");
             Focus();
             tick = new DispatcherTimer();
             tick.Tick += Tick_Tick;
@@ -253,27 +253,27 @@ namespace WinIsland
             tick.Start();
             firstPos = Left;
             //MakeWindowClickThrough(false);
-            logger.log("Attempting to be the top most window.");
+            logger.logCritical("Attempting to be the top most window.");
             Topmost = true;
             Top = 0;
             ShowInTaskbar = false;
             mainContent.Effect = be;
             windowContent.Effect = be2;
 
-            logger.log("Setting window styles...");
+            logger.logVerbose("Setting window styles...");
             IntPtr hwnd = new WindowInteropHelper(this).Handle;
             int extendedStyle = GetWindowLong(hwnd, GWL_EXSTYLE);
             SetWindowLong(hwnd, GWL_EXSTYLE, extendedStyle | WS_EX_TOOLWINDOW);
-            logger.log("Window Attributes: Main window Style | WS_EX_TOOLWINDOW");
+            logger.logVerbose("Window Attributes: Main window Style | WS_EX_TOOLWINDOW");
 
-            logger.log("Reading UI settings...");
+            logger.logVerbose("Reading UI settings...");
 
             mainWindowB.CornerRadius = new CornerRadius(settings.config.cornerRadius);
             windowBorder.CornerRadius = new CornerRadius(settings.config.cornerRadius);
 
-            logger.log("Set the Corner Radius to " + settings.config.cornerRadius);
-            logger.log("Clock is " + (settings.config.clockHidden ? "Hidden" : "Visible"));
-            logger.log("Battery icon is " + (settings.config.batteryHidden ? "Hidden" : "Visible"));
+            logger.logVerbose("Set the Corner Radius to " + settings.config.cornerRadius);
+            logger.logVerbose("Clock is " + (settings.config.clockHidden ? "Hidden" : "Visible"));
+            logger.logVerbose("Battery icon is " + (settings.config.batteryHidden ? "Hidden" : "Visible"));
 
             clock.Visibility = settings.config.clockHidden ? Visibility.Hidden : Visibility.Visible;
             battery.Visibility = settings.config.batteryHidden ? Visibility.Hidden : Visibility.Visible;
@@ -340,8 +340,8 @@ namespace WinIsland
                     {
                         //playPause.Content = "\xE102";
                         playPause2.Content = "\xE102";
-                        logger.log("NullReferenceException");
-                        logger.log(nfe.StackTrace);
+                        logger.logCritical("NullReferenceException");
+                        logger.logCritical(nfe.StackTrace);
                     }
                 }
             }
@@ -727,14 +727,14 @@ namespace WinIsland
             {
                 mediaProperties = await sessionManager.GetCurrentSession().TryGetMediaPropertiesAsync();
                 sessionManager.GetCurrentSession().TryTogglePlayPauseAsync();
-                MainWindow.logger.log(String.Format("{0} - {1}", mediaProperties?.Artist, mediaProperties?.Title));
-                MainWindow.logger.log($"Status: {sessionManager.GetCurrentSession().GetPlaybackInfo().PlaybackStatus}");
+                MainWindow.logger.logVerbose(String.Format("{0} - {1}", mediaProperties?.Artist, mediaProperties?.Title));
+                MainWindow.logger.logVerbose($"Status: {sessionManager.GetCurrentSession().GetPlaybackInfo().PlaybackStatus}");
             }catch(NullReferenceException nfe)
             {
                 toggleMediaControls(false);
                 mediaSessionIsNull = true;
-                logger.log("NullReferenceException");
-                logger.log(nfe.StackTrace);
+                logger.logCritical("NullReferenceException");
+                logger.logCritical(nfe.StackTrace);
             }
             logger.stopCounter(ppDuration, "PlayPause");
         }

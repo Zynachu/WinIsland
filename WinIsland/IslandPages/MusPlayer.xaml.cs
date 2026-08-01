@@ -71,8 +71,8 @@ namespace WinIsland.IslandPages
                         catch (NullReferenceException nfe)
                         {
                             playPause.Content = "\xE102";
-                            MainWindow.logger.log("NullReferenceException");
-                            MainWindow.logger.log(nfe.StackTrace);
+                            MainWindow.logger.logCritical("NullReferenceException");
+                            MainWindow.logger.logCritical(nfe.StackTrace);
                         }
                     }
                 }
@@ -157,8 +157,8 @@ namespace WinIsland.IslandPages
                 toggleMediaControls(false);
                 mediaSessionEmpty = true;
                 getMediaSession();
-                MainWindow.logger.log("NullReferenceException");
-                MainWindow.logger.log(nfe.StackTrace);
+                MainWindow.logger.logCritical("NullReferenceException");
+                MainWindow.logger.logCritical(nfe.StackTrace);
             }
             Dispatcher.Invoke(() =>
             {
@@ -193,8 +193,8 @@ namespace WinIsland.IslandPages
                 toggleMediaControls(false);
                 mediaSessionEmpty = true;
                 getMediaSession();
-                MainWindow.logger.log("NullReferenceException");
-                MainWindow.logger.log(nfe.StackTrace);
+                MainWindow.logger.logCritical("NullReferenceException");
+                MainWindow.logger.logCritical(nfe.StackTrace);
             }
             Dispatcher.Invoke(() =>
             {
@@ -251,8 +251,8 @@ namespace WinIsland.IslandPages
                     songThumbnail.Source = null;
                     toggleMediaControls(false);
                 });
-                MainWindow.logger.log("NullReferenceException");
-                MainWindow.logger.log(nfe.StackTrace);
+                MainWindow.logger.logCritical("NullReferenceException");
+                MainWindow.logger.logCritical(nfe.StackTrace);
             }
             catch(COMException ce)
             {
@@ -271,8 +271,8 @@ namespace WinIsland.IslandPages
                 toggleMediaControls(false);
                 mediaSessionEmpty = true;
                 getMediaSession();
-                MainWindow.logger.log("NullReferenceException");
-                MainWindow.logger.log(nfe.StackTrace);
+                MainWindow.logger.logCritical("NullReferenceException");
+                MainWindow.logger.logCritical(nfe.StackTrace);
             }
             catch
             {
@@ -299,13 +299,13 @@ namespace WinIsland.IslandPages
         }
         private async void MainWindow_MediaPropertiesChanged(GlobalSystemMediaTransportControlsSession sender, MediaPropertiesChangedEventArgs args)
         {
-            MainWindow.logger.log("MainWindow_MediaPropertiesChanged Event Called");
+            MainWindow.logger.logVerbose("MainWindow_MediaPropertiesChanged Event Called");
             getMusicInfo(sender, "MainWindow_MediaPropertiesChanged");
         }
 
         private async void MainWindow_PlaybackInfoChanged(GlobalSystemMediaTransportControlsSession sender, PlaybackInfoChangedEventArgs args)
         {
-            MainWindow.logger.log("MainWindow_PlaybackInfoChanged Event Called");
+            MainWindow.logger.logVerbose("MainWindow_PlaybackInfoChanged Event Called");
             try
             {
                 getMusicInfo(sender, "MainWindow_PlaybackInfoChanged");
@@ -328,15 +328,15 @@ namespace WinIsland.IslandPages
             {
                 MainWindow.instance.busyRing.Visibility = Visibility.Visible;
             });
-            MainWindow.logger.log("Attempting to get Music Information from Session...");
+            MainWindow.logger.logVerbose("Attempting to get Music Information from Session...");
             try
             {
                 var songInfo = await sender.TryGetMediaPropertiesAsync();
                 if (songInfo == null) {
-                    MainWindow.logger.log("songInfo is null, aborting...");
+                    MainWindow.logger.logVerbose("songInfo is null, aborting...");
                     return; 
                 };
-                MainWindow.logger.log("songInfo is NOT null, continuing...");
+                MainWindow.logger.logVerbose("songInfo is NOT null, continuing...");
                 this.Dispatcher.Invoke(() =>
                 {
                     songTitle.Text = songInfo.Title;
@@ -350,8 +350,8 @@ namespace WinIsland.IslandPages
                     {
                         mw.renderGradient(Settings.instance.thumbnail, "getMusicInfo | " + calledby);
                     }
-                    MainWindow.logger.log("Now Playing: " + songInfo.Title);
-                    MainWindow.logger.log("Artist: " + (songInfo.Artist.IsWhiteSpace() ? songInfo.AlbumArtist : songInfo.Artist));
+                    MainWindow.logger.logVerbose("Now Playing: " + songInfo.Title);
+                    MainWindow.logger.logVerbose("Artist: " + (songInfo.Artist.IsWhiteSpace() ? songInfo.AlbumArtist : songInfo.Artist));
 
                     toggleMediaControls(true);
                 });
@@ -429,3 +429,4 @@ namespace WinIsland.IslandPages
         }
     }
 }
+

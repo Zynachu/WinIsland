@@ -1,4 +1,4 @@
-﻿using iNKORE.UI.WPF.Modern;
+using iNKORE.UI.WPF.Modern;
 using NAudio.CoreAudioApi;
 using NAudio.Gui;
 using System.Diagnostics;
@@ -275,12 +275,22 @@ namespace WinIsland
             logger.logVerbose("Clock is " + (settings.config.clockHidden ? "Hidden" : "Visible"));
             logger.logVerbose("Battery icon is " + (settings.config.batteryHidden ? "Hidden" : "Visible"));
 
+            // Adjust margins based on corner radius to prevent clipping
+            double cornerMargin = Math.Max(15, settings.config.cornerRadius + 5);
+            logger.logVerbose($"Corner margin calculated: {cornerMargin}");
+
+            clock.Margin = new Thickness(cornerMargin, 6, 0, 0);
+            battery.Margin = new Thickness(0, 6, cornerMargin, 0);
+            settingsButton.Margin = new Thickness(0, 5, cornerMargin - 5, 0);
+
+            logger.logVerbose($"Applied margins - Clock: {clock.Margin}, Battery: {battery.Margin}, Settings: {settingsButton.Margin}");
+
             clock.Visibility = settings.config.clockHidden ? Visibility.Hidden : Visibility.Visible;
             battery.Visibility = settings.config.batteryHidden ? Visibility.Hidden : Visibility.Visible;
 
             if (battery.Visibility == Visibility.Hidden)
             {
-                islandMini.Margin = new Thickness(0, 0, 15, 0);
+                islandMini.Margin = new Thickness(0, 0, cornerMargin, 0);
                 if (clock.Visibility == Visibility.Hidden)
                 {
                     islandMini.Margin = new Thickness(0);
@@ -288,13 +298,13 @@ namespace WinIsland
                 }
                 else
                 {
-                    islandMini.Margin = new Thickness(0, 0, 15, 0);
+                    islandMini.Margin = new Thickness(0, 0, cornerMargin, 0);
                     islandMini.HorizontalAlignment = System.Windows.HorizontalAlignment.Right;
                 }
             }
             else
             {
-                islandMini.Margin = new Thickness(0, 0, 60, 0);
+                islandMini.Margin = new Thickness(0, 0, 60 + (cornerMargin - 15), 0);
                 islandMini.HorizontalAlignment = System.Windows.HorizontalAlignment.Right;
             }
 
@@ -591,16 +601,22 @@ namespace WinIsland
             Stopwatch animDuration = MainWindow.logger.startCounter();
             isAnimating = true;
             double dpiScale = Helper.GetDpiScale(this);
+
+            // Calculate corner-aware margins
+            double cornerMargin = Math.Max(15, settings.config.cornerRadius + 5);
+            double settingsMargin = cornerMargin - 5;
+
             ThicknessAnimation ta;
 
             if (isExpanded)
             {
                 ta = new ThicknessAnimation
                 {
-                    From = new Thickness(0, 5, 15, 0),
-                    To = new Thickness(0, 5, 37, 0),
+                    From = new Thickness(0, 6, cornerMargin, 0),
+                    To = new Thickness(0, 5, settingsMargin + 22, 0),
                     Duration = new TimeSpan(0, 0, 0, 0, 300),
-                    EasingFunction = new BackEase { EasingMode = EasingMode.EaseOut }
+                    EasingFunction = new BackEase { EasingMode = EasingMode.EaseOut },
+                    FillBehavior = FillBehavior.HoldEnd
                 };
                 settingsButton.IsEnabled = true;
                 settingsButton.Visibility = Visibility.Visible;
@@ -609,10 +625,11 @@ namespace WinIsland
             {
                 ta = new ThicknessAnimation
                 {
-                    From = new Thickness(0, 5, 37, 0),
-                    To = new Thickness(0, 5, 15, 0),
+                    From = new Thickness(0, 5, settingsMargin + 22, 0),
+                    To = new Thickness(0, 6, cornerMargin, 0),
                     Duration = new TimeSpan(0, 0, 0, 0, 300),
-                    EasingFunction = new BackEase { EasingMode = EasingMode.EaseOut }
+                    EasingFunction = new BackEase { EasingMode = EasingMode.EaseOut },
+                    FillBehavior = FillBehavior.HoldEnd
                 };
                 settingsButton.IsEnabled = false;
                 settingsButton.Visibility = Visibility.Hidden;
@@ -622,10 +639,11 @@ namespace WinIsland
             {
                 ta = new ThicknessAnimation
                 {
-                    From = new Thickness(0, 5, 37, 0),
-                    To = new Thickness(0, 5, 15, 0),
+                    From = new Thickness(0, 5, settingsMargin + 22, 0),
+                    To = new Thickness(0, 6, cornerMargin, 0),
                     Duration = new TimeSpan(0, 0, 0, 0, 300),
-                    EasingFunction = new BackEase { EasingMode = EasingMode.EaseOut }
+                    EasingFunction = new BackEase { EasingMode = EasingMode.EaseOut },
+                    FillBehavior = FillBehavior.HoldEnd
                 };
                 settingsButton.IsEnabled = false;
             }
@@ -696,6 +714,11 @@ namespace WinIsland
             if (isExpanded)
             {
                 settingsButton.BeginAnimation(Button.OpacityProperty, opacityShowAnim);
+                battery.BeginAnimation(Label.MarginProperty, ta);
+            }
+            else
+            {
+                // Animate battery back to original position when shrinking
                 battery.BeginAnimation(Label.MarginProperty, ta);
             }
             islandContent.BeginAnimation(Grid.OpacityProperty, opacityShowAnim);

@@ -175,7 +175,7 @@ namespace WinIsland
             else
                 avgB = 255;
             MainWindow.logger.logVerbose("[CalculateAverageColor] Color successfully calculated.");
-      
+
             MainWindow.logger.logVerbose("[CalculateAverageColor] Color Data: R:" +
             Convert.ToByte(avgR) + " G: " + Convert.ToByte(avgG) + " B: " +
             Convert.ToByte(avgB));

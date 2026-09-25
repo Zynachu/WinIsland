@@ -97,7 +97,7 @@
                         <BlurEffect Radius="20" KernelType="Gaussian" RenderingBias="Performance"/>
                     </Rectangle.Effect>
                     <Rectangle.Fill>
-                        <VisualBrush Visual="{Binding ElementName=songThumbnail}" />
+                        <VisualBrush Visual="{Binding ElementName=songThumbnail}" Stretch="None"/>
                     </Rectangle.Fill>
                 </Rectangle>
                 <Image x:Name="songThumbnail" Stretch="Uniform" Width="200" Height="200"/>

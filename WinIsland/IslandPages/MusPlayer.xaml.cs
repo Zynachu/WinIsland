@@ -40,7 +40,7 @@ namespace WinIsland.IslandPages
                 songThumbnail.Source = Helper.ConvertToImageSource(Settings.instance.lastThumbnail);
 
                 sliderChangeIgnore = true;
-                songProgress.Maximum = Settings.instance.lastMaxTick;
+                songProgress.Maximum = Settings.instance.lastMaxTick == 0 ? 1 : Settings.instance.lastMaxTick;
                 songProgress.Value = Settings.instance.lastCurTick;
                 songProgressLabel.Content = Settings.instance.lastDuration;
                 sliderChangeIgnore = false; 
@@ -362,11 +362,11 @@ namespace WinIsland.IslandPages
                     Dispatcher.Invoke(() =>
                     {
                         sliderChangeIgnore = true;
-                        songProgress.Maximum = 0;
+                        songProgress.Maximum = 1;
                         songProgress.Value = 0;
                         songProgressLabel.Content = "00:00 / 00:00";
 
-                        Settings.instance.lastMaxTick = 0;
+                        Settings.instance.lastMaxTick = 1;
                         Settings.instance.lastCurTick = 0;
                         Settings.instance.lastDuration =  "00:00 / 00:00";
 
@@ -420,12 +420,19 @@ namespace WinIsland.IslandPages
 
         private async void songProgress_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
         {
-            if (mw.sessionManager != null && !sliderChangeIgnore && e.NewValue != e.OldValue)
-                // Some programs does not support this!
-                // Do not accept bugs related to applications not changing their timeline with TryChangePlaybackPositionAsync.
-                // This is because it is NOT related to this app and this function is tested to work on Spotify.
-                // TODO: Add a notice about this feature that some apps may not support this function.
-                await mw.sessionManager.GetCurrentSession().TryChangePlaybackPositionAsync((long)songProgress.Value);
+            try
+            {
+                if (mw.sessionManager != null && !sliderChangeIgnore && e.NewValue != e.OldValue)
+                    // Some programs does not support this!
+                    // Do not accept bugs related to applications not changing their timeline with TryChangePlaybackPositionAsync.
+                    // This is because it is NOT related to this app and this function is tested to work on Spotify.
+                    // TODO: Add a notice about this feature that some apps may not support this function.
+                    await mw.sessionManager.GetCurrentSession().TryChangePlaybackPositionAsync((long)songProgress.Value);
+            }
+            catch(NullReferenceException nre)
+            {
+
+            }
         }
     }
 }

@@ -3,14 +3,14 @@
       xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
       xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
       xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
-      xmlns:local="clr-namespace:WinIsland.PopoutPages"
+      xmlns:local="clr-namespace:WinIsland.PopoutPages" xmlns:modern="http://schemas.inkore.net/lib/ui/wpf/modern"
       mc:Ignorable="d" 
       d:DesignHeight="466" d:DesignWidth="800"
       Title="Weather Page">
 
     <Grid>
         <Label HorizontalAlignment="Left" VerticalAlignment="Top" Margin="17,17,0,0">City Location:</Label>
-        <TextBox x:Name="locationTextBox" HorizontalAlignment="Left" Margin="108,10,0,0" TextWrapping="Wrap" Text="TextBox" VerticalAlignment="Top" Width="332"/>
+        <modern:AutoSuggestBox x:Name="locationTextBox" HorizontalAlignment="Left" Margin="108,10,0,0" Text="" VerticalAlignment="Top" Width="332" TextChanged="locationTextBox_TextChanged"/>
         <Label HorizontalAlignment="Left" VerticalAlignment="Top" Margin="17,73,0,0" Content="Latitude: "/>
         <Label HorizontalAlignment="Left" VerticalAlignment="Top" Margin="17,49,0,0" Content="Longitude: "/>
         <Label x:Name="lonLabel" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="108,49,0,0" Content="0"/>

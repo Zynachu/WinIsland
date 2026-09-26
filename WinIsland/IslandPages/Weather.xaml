@@ -12,10 +12,10 @@
 
 
     <Grid Background="Transparent">
-        <Border Background="#777777" Opacity="0.4" x:Name="backgroundBorder"/>
+        <Border Opacity="0.4" x:Name="backgroundBorder"/>
         <Grid Margin="0,35,0,0">
             <Image x:Name="test"/>
-            <Label x:Name="waitLabel" Content="Loading weather information..." HorizontalAlignment="Center" VerticalAlignment="Center" HorizontalContentAlignment="Center"/>
+            <Label x:Name="waitLabel" Content="Loading weather information..." HorizontalAlignment="Center" VerticalAlignment="Center" HorizontalContentAlignment="Center" Foreground="{DynamicResource ForegroundTextBrush}"/>
             <StackPanel HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Orientation="Vertical">
                 <Grid Margin="40,0,0,0" HorizontalAlignment="Stretch">
                     <Image x:Name="curWeatherIcon" Width="128" Height="128" Source="{Binding image}" Margin="0,0,0,10" HorizontalAlignment="Left">
@@ -23,13 +23,13 @@
                             <DropShadowEffect BlurRadius="10" ShadowDepth="0" Opacity="0.3" Color="Black"/>
                         </Image.Effect>
                     </Image>
-                    <Label Name="curDay" Content="Today" FontSize="25" FontWeight="Bold" Margin="141,40,0,0" HorizontalContentAlignment="Center" HorizontalAlignment="Left" VerticalAlignment="Top" Foreground="{DynamicResource {x:Static ui:ThemeKeys.DefaultTextForegroundThemeBrushKey}}"/>
-                    <Label Name="cityName" Content="tempCity" FontSize="25" FontWeight="Bold" Margin="141,10,0,0" HorizontalContentAlignment="Center" HorizontalAlignment="Left" VerticalAlignment="Top" Foreground="{DynamicResource {x:Static ui:ThemeKeys.DefaultTextForegroundThemeBrushKey}}"/>
+                    <Label Name="curDay" Content="Today" FontSize="25" FontWeight="Bold" Margin="141,40,0,0" HorizontalContentAlignment="Center" HorizontalAlignment="Left" VerticalAlignment="Top" Foreground="{DynamicResource ForegroundTextBrush}"/>
+                    <Label Name="cityName" Content="tempCity" FontSize="25" FontWeight="Bold" Margin="141,10,0,0" HorizontalContentAlignment="Center" HorizontalAlignment="Left" VerticalAlignment="Top" Foreground="{DynamicResource ForegroundTextBrush}"/>
                     <StackPanel Orientation="Horizontal" Margin="141,78,0,0" HorizontalAlignment="Left" VerticalAlignment="Top">
-                        <Label Name="curTempMax" Content="0" Margin="0,0,10,0" HorizontalContentAlignment="Center" Foreground="{DynamicResource {x:Static ui:ThemeKeys.DefaultTextForegroundThemeBrushKey}}"/>
-                        <Label Name="curTempMin" Content="0" Margin="0,0,10,0" HorizontalContentAlignment="Center" Foreground="{DynamicResource {x:Static ui:ThemeKeys.DefaultTextForegroundThemeBrushKey}}"/>
-                        <Label Name="curSunrise" Content="00:00" Margin="0,0,10,0" HorizontalContentAlignment="Center" Foreground="{DynamicResource {x:Static ui:ThemeKeys.DefaultTextForegroundThemeBrushKey}}"/>
-                        <Label Name="curSunset" Content="00:00" Margin="0,0,10,0" HorizontalContentAlignment="Center" Foreground="{DynamicResource {x:Static ui:ThemeKeys.DefaultTextForegroundThemeBrushKey}}"/>
+                        <Label Name="curTempMax" Content="0" Margin="0,0,10,0" HorizontalContentAlignment="Center" Foreground="{DynamicResource ForegroundTextBrush}"/>
+                        <Label Name="curTempMin" Content="0" Margin="0,0,10,0" HorizontalContentAlignment="Center" Foreground="{DynamicResource ForegroundTextBrush}"/>
+                        <Label Name="curSunrise" Content="00:00" Margin="0,0,10,0" HorizontalContentAlignment="Center" Foreground="{DynamicResource ForegroundTextBrush}"/>
+                        <Label Name="curSunset" Content="00:00" Margin="0,0,10,0" HorizontalContentAlignment="Center" Foreground="{DynamicResource ForegroundTextBrush}"/>
                     </StackPanel>
                 </Grid>
                 <ListBox Margin="0,0,0,40" Background="Transparent" x:Name="WeatherListView" d:ItemsSource="{d:SampleData ItemCount=7}" HorizontalAlignment="Stretch" VerticalAlignment="Bottom" IsEnabled="False">
@@ -47,10 +47,10 @@
                                             <DropShadowEffect BlurRadius="10" ShadowDepth="0" Opacity="0.3" Color="Black"/>
                                         </Image.Effect>
                                     </Image>
-                                    <Label Content="{Binding dayOfWeek}" Margin="0,0,0,0" HorizontalContentAlignment="Center" Foreground="{DynamicResource {x:Static ui:ThemeKeys.DefaultTextForegroundThemeBrushKey}}"/>
+                                    <Label Content="{Binding dayOfWeek}" Margin="0,0,0,0" HorizontalContentAlignment="Center" Foreground="{DynamicResource ForegroundTextBrush}"/>
                                     <Grid Margin="0,10,0,0" Width="50" HorizontalAlignment="Stretch">
-                                        <Label Content="{Binding tmax}" HorizontalContentAlignment="Center" HorizontalAlignment="Left" Foreground="{DynamicResource {x:Static ui:ThemeKeys.DefaultTextForegroundThemeBrushKey}}"/>
-                                        <Label Content="{Binding tmin}" HorizontalContentAlignment="Center" HorizontalAlignment="Right" Foreground="{DynamicResource {x:Static ui:ThemeKeys.DefaultTextForegroundThemeBrushKey}}"/>
+                                        <Label Content="{Binding tmax}" HorizontalContentAlignment="Center" HorizontalAlignment="Left" Foreground="{DynamicResource ForegroundTextBrush}"/>
+                                        <Label Content="{Binding tmin}" HorizontalContentAlignment="Center" HorizontalAlignment="Right" Foreground="{DynamicResource ForegroundTextBrush}"/>
                                         <!--
                                 <Label Content="{Binding sunrise}" HorizontalContentAlignment="Center" Foreground="{DynamicResource {x:Static ui:ThemeKeys.DefaultTextForegroundThemeBrushKey}}"/>
                                 <Label Content="{Binding sunset}" HorizontalContentAlignment="Center" Foreground="{DynamicResource {x:Static ui:ThemeKeys.DefaultTextForegroundThemeBrushKey}}"/>

@@ -92,7 +92,7 @@ namespace WinIsland.PopoutPages
                 Settings.instance.config.cornerRadius = (int)e.NewValue;
 
                 // Override the theme's corner radius
-                System.Windows.Application.Current.Resources["WindowCornerRadius"] = new CornerRadius((int)e.NewValue);
+                //System.Windows.Application.Current.Resources["WindowCornerRadius"] = new CornerRadius((int)e.NewValue);
 
                 corRadLabel.Content = (int)e.NewValue + "px (Def: 10px)";
             }

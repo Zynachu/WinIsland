@@ -2,8 +2,10 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Windows;
+using System.Windows.Markup;
 using iNKORE.UI.WPF.Modern;
 using Newtonsoft.Json;
+using Application = System.Windows.Application;
 
 namespace WinIsland
 {
@@ -151,17 +153,21 @@ namespace WinIsland
                 }
 
                 // Load new theme
-                var dict = new ResourceDictionary();
-                dict.Source = new Uri(themePath, UriKind.Relative);
-                System.Windows.Application.Current.Resources.MergedDictionaries.Add(dict);
+                using (FileStream fs = new FileStream(themePath, FileMode.Open, FileAccess.Read))
+                {
+                    // Parse as a ResourceDictionary
+                    var customSkin = (ResourceDictionary)XamlReader.Load(fs);
 
-                _currentThemeDict = dict;
+                    Application.Current.Resources.MergedDictionaries.Add(customSkin);
+                    _currentThemeDict = customSkin;
+                }
 
                 MainWindow.logger?.log($"Theme loaded: {themePath}");
             }
             catch (Exception ex)
             {
                 MainWindow.logger?.logCritical($"Failed to load theme {themePath}: {ex.Message}");
+                MainWindow.logger.log($"StackTrace: {ex.StackTrace}");
             }
         }
     }

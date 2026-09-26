@@ -26,13 +26,14 @@
                 BorderBrush="{DynamicResource WindowBorderBrush}"
                 BorderThickness="{DynamicResource WindowBorderThickness}"
                 CornerRadius="{DynamicResource WindowCornerRadius}">
-            <Border.Resources>
+            <Border.Resources>  
                 <Style x:Name="buttonStyle" TargetType="{x:Type Button}">
-                    <Setter Property="Background" Value="Transparent"/>
+                    <Setter Property="Background" Value="{DynamicResource ButtonBaseBrush}"/>
+                    <Setter Property="Effect" Value="{DynamicResource ButtonEffect}"/>
                     <Setter Property="Template">
                         <Setter.Value>
                             <ControlTemplate TargetType="{x:Type Button}">
-                                <Border RenderTransformOrigin="0.5,0.5" x:Name="ButtonGrid" Background="{TemplateBinding Background}" CornerRadius="5">
+                                <Border RenderTransformOrigin="0.5,0.5" x:Name="ButtonGrid" Background="{TemplateBinding Background}" CornerRadius="{DynamicResource ButtonCornerRadius}" BorderBrush="{DynamicResource ButtonBorderBrush}" BorderThickness="{DynamicResource ButtonBorderThickness}">
                                     <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
                                     <Border.RenderTransform>
                                         <ScaleTransform/>
@@ -88,7 +89,7 @@
                             <Setter Property="Foreground" Value="Gray"/>
                         </Trigger>
                         <Trigger Property="IsEnabled" Value="True">
-                            <Setter Property="Foreground" Value="{DynamicResource {x:Static ui:ThemeKeys.DefaultTextForegroundThemeBrushKey}}"/>
+                            <Setter Property="Foreground" Value="{DynamicResource ForegroundTextBrush}"/>
                         </Trigger>
                     </Style.Triggers>
                 </Style>
@@ -103,17 +104,17 @@
                 <Grid.OpacityMask>
                     <VisualBrush Visual="{Binding ElementName=mainWindowB}" />
                 </Grid.OpacityMask>
-                <Border x:Name="mainWindowB" MouseUp="Border_MouseUp" Background="{DynamicResource {x:Static ui:ThemeKeys.ApplicationPageBackgroundThemeBrushKey}}" BorderBrush="#444444" CornerRadius="10"/>
-                <Grid x:Name="gradientBG" ClipToBounds="True">
-                    <Image VerticalAlignment="Center" ClipToBounds="True" x:Name="bg" Opacity="0.2" Margin="-130" Stretch="UniformToFill"/>
+                <Border x:Name="mainWindowB" MouseUp="Border_MouseUp" Background="{DynamicResource {x:Static ui:ThemeKeys.ApplicationPageBackgroundThemeBrushKey}}" BorderBrush="#444444" CornerRadius="{DynamicResource WindowCornerRadius}"/>
+                <Grid x:Name="gradientBG" ClipToBounds="True" Visibility="{DynamicResource AlbumBackgroundGradientVisibility}"> 
+                    <Image Visibility="{DynamicResource AlbumBackgroundImageVisibility}" VerticalAlignment="Center" ClipToBounds="True" x:Name="bg" Opacity="0.2" Margin="-130" Stretch="UniformToFill"/>
                     <Grid ClipToBounds="True" x:Name="gridBG" Opacity="0.6"/>
                     <Grid ClipToBounds="True" x:Name="gridBG2" Opacity="0.6"/>
                 </Grid>
-				<Grid x:Name="miniIslandGrid" MouseUp="Border_MouseUp" ClipToBounds="True">
+                <Grid x:Name="miniIslandGrid" MouseUp="Border_MouseUp" ClipToBounds="True" Background="{DynamicResource IslandBackgroundBrush}">
                     <!--Clock-->
-                    <Label x:Name="clock" Margin="15,6,0,0" FontSize="16" FontFamily="Segoe UI"/>
+                    <Label x:Name="clock" Margin="15,6,0,0" FontSize="16" FontFamily="Segoe UI" Foreground="{DynamicResource ForegroundTextBrush}"/>
                     <!--Battery-->
-                    <Label x:Name="battery" Margin="0,6,15,0" HorizontalAlignment="Right" Content="&#xE83F;" FontSize="26" FontFamily="./Fonts/#Segoe Fluent Icons" VerticalContentAlignment="Center" VerticalAlignment="Top"/>
+                    <Label x:Name="battery" Margin="0,6,15,0" HorizontalAlignment="Right" Content="&#xE83F;" FontSize="26" FontFamily="./Fonts/#Segoe Fluent Icons" VerticalContentAlignment="Center" VerticalAlignment="Top" Foreground="{DynamicResource ForegroundTextBrush}"/>
                     <StackPanel x:Name="islandMini" HorizontalAlignment="Right" Orientation="Horizontal" Margin="0,0,60,0">
                         <Button x:Name="beforeRewind2" Click="beforeRewind_Click" Content="&#xE100;" Height="25" Width="25" Margin="0,0,5,0" FontFamily="./Fonts/#Segoe Fluent Icons" FontSize="15" BorderThickness="0" FontWeight="Bold"/>
                         <Button x:Name="playPause2" Click="playPause_Click" Content="&#xE102;" Height="25" Width="25" Margin="0,0,5,0" FontFamily="./Fonts/#Segoe Fluent Icons" FontSize="15" BorderThickness="0" FontWeight="Bold"/>
@@ -121,7 +122,7 @@
                     </StackPanel>
                 </Grid>
                 <Grid x:Name="systemEventSmall" VerticalAlignment="Top" Margin="10,0,10,0">
-                    <Label Margin="1,7,0,0" Content="&#xE767;" FontFamily="./Fonts/#Segoe Fluent Icons" FontSize="20"/>
+                    <Label Margin="1,7,0,0" Content="&#xE767;" FontFamily="./Fonts/#Segoe Fluent Icons" FontSize="20" Foreground="{DynamicResource ForegroundTextBrush}"/>
                     <Slider x:Name="volumeSlider" Maximum="1" VerticalAlignment="Center" Margin="34,0,30,0" Value="0.3"/>
                 </Grid>
                 <!--Main Content-->

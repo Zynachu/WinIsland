@@ -2,16 +2,35 @@
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                     xmlns:System="clr-namespace:System;assembly=mscorlib">
 
+    <!-- You can also overwrite iNKORE.UI themes, which basically grants you app-wide theme control -->
+
     <!-- Dark mode variant -->
+
+    <!-- Island Colors -->
+    <SolidColorBrush x:Key="IslandBackgroundBrush" Color="Transparent"/>
+    <SolidColorBrush x:Key="ForegroundTextBrush" Color="White"/>
 
     <!-- Border colors -->
     <SolidColorBrush x:Key="WindowBorderBrush" Color="#444444"/>
     <SolidColorBrush x:Key="MainBorderBrush" Color="#444444"/>
 
-    <!-- Button colors -->
+    <!-- Button colors & styles -->
     <SolidColorBrush x:Key="ButtonHoverBrush" Color="#33FFFFFF"/>
     <SolidColorBrush x:Key="ButtonPressBrush" Color="#22FFFFFF"/>
-    <SolidColorBrush x:Key="ButtonTransparent" Color="Transparent"/>
+    <SolidColorBrush x:Key="ButtonBaseBrush" Color="#00000000"/>
+    <SolidColorBrush x:Key="ButtonBorderBrush" Color="#444444"/>
+    <Thickness x:Key="ButtonBorderThickness">0</Thickness>
+
+    <!-- Page Elements -->
+    <Visibility x:Key="AlbumBackgroundImageVisibility">Visible</Visibility>
+    <!-- Disabling this also disables the background -->
+    <Visibility x:Key="AlbumBackgroundGradientVisibility">Visible</Visibility>
+    <Visibility x:Key="ThumbnailGlowVisibility">Visible</Visibility>
+
+    <!-- UI Effects -->
+    <!-- Ex: <DropShadowEffect x:Key="ButtonEffect" BlurRadius="10" ShadowDepth="2" Color="Black"/> -->
+    <x:Null x:Key="ButtonEffect"/>
+    <x:Null x:Key="ImageEffect"/>
 
     <!-- Text colors -->
     <SolidColorBrush x:Key="SecondaryTextBrush" Color="Gray"/>
@@ -48,5 +67,4 @@
     <System:Double x:Key="MarqueeScrollSpeed">100</System:Double>
     <System:Double x:Key="MarqueePauseDuration">1.5</System:Double>
     <System:Double x:Key="ThumbnailBlurRadius">20</System:Double>
-
 </ResourceDictionary>

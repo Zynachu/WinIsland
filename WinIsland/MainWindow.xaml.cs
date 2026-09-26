@@ -271,8 +271,8 @@ namespace WinIsland
 
             logger.logVerbose("Reading UI settings...");
 
-            mainWindowB.CornerRadius = new CornerRadius(settings.config.cornerRadius);
-            windowBorder.CornerRadius = new CornerRadius(settings.config.cornerRadius);
+            //mainWindowB.CornerRadius = new CornerRadius(settings.config.cornerRadius);
+            //windowBorder.CornerRadius = new CornerRadius(settings.config.cornerRadius);
 
             logger.logVerbose("Set the Corner Radius to " + settings.config.cornerRadius);
             logger.logVerbose("Clock is " + (settings.config.clockHidden ? "Hidden" : "Visible"));

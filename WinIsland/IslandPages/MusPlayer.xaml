@@ -13,11 +13,12 @@
     <Grid>
         <Grid.Resources>
             <Style x:Name="buttonStyle" TargetType="{x:Type Button}">
-                <Setter Property="Background" Value="Transparent"/>
+                <Setter Property="Background" Value="{DynamicResource ButtonBaseBrush}"/>
+                <Setter Property="Effect" Value="{DynamicResource ButtonEffect}"/>
                 <Setter Property="Template">
                     <Setter.Value>
                         <ControlTemplate TargetType="{x:Type Button}">
-                            <Border RenderTransformOrigin="0.5,0.5" x:Name="ButtonGrid" Background="{TemplateBinding Background}" CornerRadius="5">
+                            <Border RenderTransformOrigin="0.5,0.5" x:Name="ButtonGrid" Background="{TemplateBinding Background}" CornerRadius="{DynamicResource ButtonCornerRadius}" BorderBrush="{DynamicResource ButtonBorderBrush}" BorderThickness="{DynamicResource ButtonBorderThickness}">
                                 <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
                                 <Border.RenderTransform>
                                     <ScaleTransform/>
@@ -64,16 +65,16 @@
                 </Setter>
                 <Style.Triggers>
                     <Trigger Property="IsMouseOver" Value="True">
-                        <Setter Property="Background" Value="#33FFFFFF"/>
+                        <Setter Property="Background" Value="{DynamicResource ButtonHoverBrush}"/>
                     </Trigger>
                     <Trigger Property="IsPressed" Value="True">
-                        <Setter Property="Background" Value="#22FFFFFF"/>
+                        <Setter Property="Background" Value="{DynamicResource ButtonPressBrush}"/>
                     </Trigger>
                     <Trigger Property="IsEnabled" Value="False">
                         <Setter Property="Foreground" Value="Gray"/>
                     </Trigger>
                     <Trigger Property="IsEnabled" Value="True">
-                        <Setter Property="Foreground" Value="{DynamicResource {x:Static ui:ThemeKeys.DefaultTextForegroundThemeBrushKey}}"/>
+                        <Setter Property="Foreground" Value="{DynamicResource ForegroundTextBrush}"/>
                     </Trigger>
                 </Style.Triggers>
             </Style>
@@ -92,7 +93,7 @@
                         </BeginStoryboard>
                     </EventTrigger>
                 </Grid.Triggers>
-                <Rectangle>
+                <Rectangle Visibility="{DynamicResource ThumbnailGlowVisibility}">
                     <Rectangle.Effect>
                         <BlurEffect Radius="20" KernelType="Gaussian" RenderingBias="Performance"/>
                     </Rectangle.Effect>
@@ -100,10 +101,16 @@
                         <VisualBrush Visual="{Binding ElementName=songThumbnail}" Stretch="None"/>
                     </Rectangle.Fill>
                 </Rectangle>
-                <Image x:Name="songThumbnail" Stretch="Uniform" Width="200" Height="200"/>
+                <Image x:Name="songThumbnail" Stretch="Uniform" Width="200" Height="200">
+                    <Image.Resources>
+                        <Style x:Name="imgStyle" TargetType="{x:Type Image}">
+                            <Setter Property="Effect" Value="{DynamicResource ImageEffect}"/>
+                        </Style>
+                    </Image.Resources>
+                </Image>
             </Grid>
             <StackPanel Margin="30,65,0,0" Orientation="Vertical" VerticalAlignment="Stretch">
-                <controls:TextMarquee x:Name="songTitle" Text="No song playing" FontSize="24" Width="450" Height="32" FontFamily="Segoe UI" FontWeight="Bold" ScrollSpeed="35" PauseDuration="1.5"/>
+                <controls:TextMarquee x:Name="songTitle" Text="No song playing" FontSize="24" Width="450" Height="32" FontFamily="Segoe UI" FontWeight="Bold" ScrollSpeed="35" PauseDuration="1.5" Foreground="{DynamicResource ForegroundTextBrush}"/>
                 <controls:TextMarquee x:Name="songArtist"
                       Text="WinIsland by Charamellized"
                       Width="{DynamicResource SongTitleWidth}"
@@ -113,7 +120,7 @@
 
                 <StackPanel HorizontalAlignment="Stretch" VerticalAlignment="Center" Margin="0,0,0,0" Orientation="Vertical">
                     <Slider x:Name="songProgress" ValueChanged="songProgress_ValueChanged" HorizontalAlignment="Stretch"/>
-                    <Label x:Name="songProgressLabel" Content="curVal/maxVal" HorizontalAlignment="Center" FontFamily="Segoe UI" FontWeight="Light"/>
+                    <Label x:Name="songProgressLabel" Content="curVal/maxVal" HorizontalAlignment="Center" FontFamily="Segoe UI" FontWeight="Light" Foreground="{DynamicResource ForegroundTextBrush}"/>
                 </StackPanel>
                 <StackPanel HorizontalAlignment="Center" VerticalAlignment="Top" Margin="0,50,0,0" Orientation="Horizontal">
                     <Button x:Name="beforeRewind" Click="beforeRewind_Click" Content="&#xE100;" Height="50" Width="50" Margin="0,0,10,0" FontFamily="../Fonts/#Segoe Fluent Icons" FontSize="24" BorderThickness="0" FontWeight="Bold"/>

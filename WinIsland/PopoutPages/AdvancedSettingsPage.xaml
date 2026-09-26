@@ -13,10 +13,10 @@
     <Grid>
         <StackPanel Margin="10" Width="300" HorizontalAlignment="Left" VerticalAlignment="Top">
             <StackPanel Orientation="Horizontal">
-                <Label Content="Island Corner Radius"/>
+                <Label Content="Island Corner Radius [Deprecated, use custom theming]"/>
                 <Label Content="0px (Def: 10px)" x:Name="corRadLabel" Margin="4,0,0,0"/>
             </StackPanel>
-            <Slider Minimum="0" Maximum="40" x:Name="corRadSlider" ValueChanged="corRadSlider_ValueChanged" MouseLeave="corRadSlider_MouseLeave"/>
+            <Slider IsEnabled="False" Minimum="0" Maximum="40" x:Name="corRadSlider" ValueChanged="corRadSlider_ValueChanged" MouseLeave="corRadSlider_MouseLeave"/>
             <CheckBox Margin="3,10,0,0" x:Name="hideClockToggle" Content="- Hide the clock." Click="hideClockToggle_Click"/>
             <CheckBox Margin="3,10,0,0" x:Name="hideBatteryToggle" Content="- Hide the battery icon." Click="hideBatteryToggle_Click"/>
             <Label Content="Theme:" FontSize="16" FontWeight="Bold" Margin="0,20,0,10"/>

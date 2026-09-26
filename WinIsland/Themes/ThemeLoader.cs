@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using System.Windows;
+using System.Windows.Markup;
 using Application = System.Windows.Application;
 
 namespace WinIsland.Themes
@@ -63,6 +64,7 @@ namespace WinIsland.Themes
                     catch (Exception ex)
                     {
                         MainWindow.logger.log($"Failed to load theme from {folder}: {ex.Message}");
+                        MainWindow.logger.log($"StackTrace: {ex.StackTrace}");
                     }
                 }
             }
@@ -117,24 +119,33 @@ namespace WinIsland.Themes
 
             try
             {
-                var dict = new ResourceDictionary
-                {
-                    Source = new Uri(themeFile, UriKind.Absolute)
-                };
+                //var dict = new ResourceDictionary
+                //{
+                //    Source = new Uri(themeFile, UriKind.Absolute)
+                //};
 
                 var oldTheme = Application.Current.Resources.MergedDictionaries
                     .FirstOrDefault(d => d.Source?.OriginalString.Contains("\\Themes\\") == true);
                 if (oldTheme != null)
                     Application.Current.Resources.MergedDictionaries.Remove(oldTheme);
 
-                Application.Current.Resources.MergedDictionaries.Add(dict);
+                //var customSkin = (ResourceDictionary)XamlReader.Load(dict);
 
-                MainWindow.logger.log($"Loaded theme: {currentTheme.Metadata.Name} ({mode} mode)");
+                using (FileStream fs = new FileStream(themeFile, FileMode.Open, FileAccess.Read))
+                {
+                    // Parse as a ResourceDictionary
+                    var customSkin = (ResourceDictionary)XamlReader.Load(fs);
+
+                    Application.Current.Resources.MergedDictionaries.Add(customSkin);
+
+                    MainWindow.logger.log($"Loaded theme: {currentTheme.Metadata.Name} ({mode} mode)");
+                }
                 return true;
             }
             catch (Exception ex)
             {
                 MainWindow.logger.log($"Failed to apply theme: {ex.Message}");
+                MainWindow.logger.log($"StackTrace: {ex.StackTrace}");
                 return false;
             }
         }

@@ -73,6 +73,7 @@ namespace WinIsland
             MainWindow.logger.logCritical("Settings file invalid or missing, creating a new one...");
             config = new SettingsConfig
             {
+                currentThemeName = "DefaultTheme",
                 blurEverywhere = false,
                 ambientBGBlur = 40,
                 cornerRadius = 10,
@@ -88,13 +89,12 @@ namespace WinIsland
         }
         public class SettingsConfig()
         {
+            public string currentThemeName { get; set; } = "DefaultTheme";
             public bool blurEverywhere { get; set; }
             public bool clockHidden { get; set; }
             public bool batteryHidden { get; set; }
             public bool verboseLog { get; set; }
-
             public float ambientBGBlur { get; set; }
-
             public int cornerRadius { get; set; }
             public string lat { get; set; } = "";
             public string lon { get; set; } = "";

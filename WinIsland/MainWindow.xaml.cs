@@ -19,6 +19,7 @@ using System.Windows.Threading;
 using Windows.Media.Control;
 using WinIsland.IslandPages;
 using WinIsland.PluginSystem;
+using WinIsland.Themes;
 using WinRT;
 using static System.Windows.Forms.VisualStyles.VisualStyleElement.TrackBar;
 using static WinIsland.PInvoke;
@@ -80,7 +81,9 @@ namespace WinIsland
             logger.logCritical("Initializing island...");
             Stopwatch initDuration = logger.startCounter();
             instance = this;
+
             InitializeComponent();
+
             logger.logVerbose("Main UI Component initialized.");
 
             // PluginInit.loadAll(pluginManager);

@@ -1,0 +1,9 @@
+{
+  "name": "Default Theme",
+  "author": "Zynachu",
+  "version": "1.0",
+  "description": "Default WinIsland theme with separate light and dark variants",
+  "unified": false, // If the theme is the same in both dark and light mode in one file, stored in Theme.xaml
+  "hasLight": true, // Light.xaml
+  "hasDark": true // Dark.xaml
+}

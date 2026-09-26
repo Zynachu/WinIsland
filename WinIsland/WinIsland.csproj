@@ -18,6 +18,12 @@
     <None Remove="Assets\weather.json" />
     <None Remove="Assets\wypher.jpg" />
     <None Remove="Fonts\sfi.ttf" />
+    <None Remove="Themes\DefaultTheme\metadata.json" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Page Remove="Themes\DefaultTheme\Dark.xaml" />
+    <Page Remove="Themes\DefaultTheme\Light.xaml" />
   </ItemGroup>
 
   <ItemGroup>
@@ -42,6 +48,17 @@
     <Resource Include="Assets\wypher.jpg">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Resource>
+    <Content Include="Themes\DefaultTheme\Dark.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Themes\DefaultTheme\Light.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Themes\DefaultTheme\metadata.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
 
   <ItemGroup>

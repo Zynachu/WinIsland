@@ -19,9 +19,15 @@
             <Slider Minimum="0" Maximum="40" x:Name="corRadSlider" ValueChanged="corRadSlider_ValueChanged" MouseLeave="corRadSlider_MouseLeave"/>
             <CheckBox Margin="3,10,0,0" x:Name="hideClockToggle" Content="- Hide the clock." Click="hideClockToggle_Click"/>
             <CheckBox Margin="3,10,0,0" x:Name="hideBatteryToggle" Content="- Hide the battery icon." Click="hideBatteryToggle_Click"/>
+            <Label Content="Theme:" FontSize="16" FontWeight="Bold" Margin="0,20,0,10"/>
+            <ComboBox x:Name="themeSelector"
+                SelectionChanged="themeSelector_SelectionChanged"
+                Width="280"
+                HorizontalAlignment="Left"/>
+            <Label Content="Theme Mode:" FontSize="16" FontWeight="Bold" Margin="0,20,0,10"/>
             <StackPanel Margin="3,10,0,0" Orientation="Horizontal">
-				<RadioButton Content="Light Mode" x:Name="lightSelect" Click="lightSelect_Click"/>
-				<RadioButton Content="Dark Mode" x:Name="darkSelect" Click="darkSelect_Click"/>
+                <RadioButton Content="Light Mode" x:Name="lightSelect" Click="lightSelect_Click"/>
+                <RadioButton Content="Dark Mode" x:Name="darkSelect" Click="darkSelect_Click"/>
             </StackPanel>
         </StackPanel>
     </Grid>

@@ -1,19 +1,8 @@
 ﻿using iNKORE.UI.WPF.Modern;
 using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
-using Windows.Devices.Power;
 
 namespace WinIsland.PopoutPages
 {
@@ -33,16 +22,62 @@ namespace WinIsland.PopoutPages
             corRadLabel.Content = Settings.instance.config.cornerRadius + "px (Def: 10px)";
             hideBatteryToggle.IsChecked = Settings.instance.config.batteryHidden;
             hideClockToggle.IsChecked = Settings.instance.config.clockHidden;
-            if(ThemeManager.Current.ApplicationTheme == ApplicationTheme.Light) lightSelect.IsChecked = true;
-            else if(ThemeManager.Current.ApplicationTheme == ApplicationTheme.Dark) darkSelect.IsChecked = true;
+
+            if(ThemeManager.Current.ApplicationTheme == ApplicationTheme.Light)
+                lightSelect.IsChecked = true;
+            else if(ThemeManager.Current.ApplicationTheme == ApplicationTheme.Dark)
+                darkSelect.IsChecked = true;
+
+            // Load available themes into dropdown
+            LoadThemeList();
         }
+
+        private void LoadThemeList()
+        {
+            var themes = ThemeLoader.GetAvailableThemes();
+
+            themeSelector.Items.Clear();
+
+            foreach (var (folderPath, metadata) in themes)
+            {
+                var item = new ComboBoxItem
+                {
+                    Content = $"{metadata.Name} by {metadata.Author}",
+                    Tag = folderPath
+                };
+                MainWindow.logger.logVerbose("Adding " + item.Content.ToString() + " to the styles.");
+                themeSelector.Items.Add(item);
+
+                // Select current theme
+                string currentThemeFolder = "Themes/" + Settings.instance.config.currentThemeName;
+                if (folderPath == currentThemeFolder)
+                {
+                    themeSelector.SelectedItem = item;
+                }
+            }
+        }
+
+        private void themeSelector_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (themeSelector.SelectedItem is ComboBoxItem item)
+            {
+                string themePath = item.Tag as string;
+                string themeName = System.IO.Path.GetFileName(themePath);
+                Settings.instance.config.currentThemeName = themeName;
+                ThemeLoader.LoadTheme(themePath);
+            }
+        }
+
         private void lightSelect_Click(object sender, RoutedEventArgs e)
         {
             ThemeManager.Current.ApplicationTheme = ApplicationTheme.Light;
+            // ThemeLoader.SwitchToMode() is called automatically via App.xaml.cs event handler
         }
+
         private void darkSelect_Click(object sender, RoutedEventArgs e)
         {
             ThemeManager.Current.ApplicationTheme = ApplicationTheme.Dark;
+            // ThemeLoader.SwitchToMode() is called automatically via App.xaml.cs event handler
         }
 
         private void corRadSlider_MouseLeave(object sender, System.Windows.Input.MouseEventArgs e)
@@ -52,11 +87,13 @@ namespace WinIsland.PopoutPages
 
         private void corRadSlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
         {
-            if(e.OldValue != e.NewValue)
+            if (e.OldValue != e.NewValue)
             {
                 Settings.instance.config.cornerRadius = (int)e.NewValue;
-                MainWindow.instance.mainWindowB.CornerRadius = new CornerRadius((int)e.NewValue);
-                MainWindow.instance.windowBorder.CornerRadius = new CornerRadius((int)e.NewValue);
+
+                // Override the theme's corner radius
+                System.Windows.Application.Current.Resources["WindowCornerRadius"] = new CornerRadius((int)e.NewValue);
+
                 corRadLabel.Content = (int)e.NewValue + "px (Def: 10px)";
             }
         }

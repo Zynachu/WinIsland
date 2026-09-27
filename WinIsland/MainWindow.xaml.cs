@@ -217,30 +217,46 @@ namespace WinIsland
         {
             Stopwatch renderDuration = logger.startCounter();
             logger.logVerbose("Getting gradient... [" + calledby + "]");
-            Color color = Helper.CalculateAverageColor(bmp);
-            if(ThemeManager.Current.ActualApplicationTheme == ApplicationTheme.Light)
+            Color color = Colors.Transparent;
+            new Thread(() =>
             {
-                color = Helper.Lighten(color, 1f);
-                gridBG.Visibility = Visibility.Collapsed;
-                gridBG2.Visibility = Visibility.Collapsed;
-            }
-            LinearGradientBrush gradientBrush = new LinearGradientBrush(color, Color.FromArgb(0, 0, 0, 0), new Point(0.0, 1), new Point(0.5, 1));
-            LinearGradientBrush gradientBrush2 = new LinearGradientBrush(Color.FromArgb(0, 0, 0, 0), color, new Point(0.5, 1), new Point(1, 1));
-            gridBG.Background = gradientBrush;
-            gridBG2.Background = gradientBrush2;
-            windowBorder.BorderBrush = new SolidColorBrush(color);
-            settings.borderColor = color;
-            dropShadowEffect.Color = color;
-            if (settings.thumbnail != null)
-                renderBackground(bmp);
+                color = Helper.CalculateAverageColor(bmp);
+                Dispatcher.Invoke(() =>
+                {
+                    if (ThemeManager.Current.ActualApplicationTheme == ApplicationTheme.Light)
+                    {
+                        color = Helper.Lighten(color, 1f);
+                        gridBG.Visibility = Visibility.Collapsed;
+                        gridBG2.Visibility = Visibility.Collapsed;
+                    }
+                });
+                Dispatcher.Invoke(() =>
+                {
+                    LinearGradientBrush gradientBrush = new LinearGradientBrush(color, Color.FromArgb(0, 0, 0, 0), new Point(0.0, 1), new Point(0.5, 1));
+                    LinearGradientBrush gradientBrush2 = new LinearGradientBrush(Color.FromArgb(0, 0, 0, 0), color, new Point(0.5, 1), new Point(1, 1));
+                    gridBG.Background = gradientBrush;
+                    gridBG2.Background = gradientBrush2;
+                    windowBorder.BorderBrush = new SolidColorBrush(color);
+                    settings.borderColor = color;
+                    dropShadowEffect.Color = color;
+                    if (settings.thumbnail != null)
+                        renderBackground(bmp);
+                });
+            }).Start();
             logger.stopCounter(renderDuration, "renderGradient");
         }
         public void renderBackground(Bitmap bmp)
         {
-            Bitmap blurredBitmap = Helper.CreateBlurredBitmap(bmp, (int)settings.config.ambientBGBlur);
-            bg.Source = Helper.ConvertToImageSource(blurredBitmap);
-            bg.Effect = null;
-            blurredBitmap.Dispose();
+            new Thread(() =>
+            {
+                Bitmap blurredBitmap = Helper.CreateBlurredBitmap(bmp, (int)settings.config.ambientBGBlur);
+                Dispatcher.Invoke(() =>
+                {
+                    bg.Source = Helper.ConvertToImageSource(blurredBitmap);
+                    bg.Effect = null;
+                });
+                blurredBitmap.Dispose();
+            }).Start();
         }
 
         BlurEffect be = new BlurEffect { Radius = 0, RenderingBias = RenderingBias.Performance };

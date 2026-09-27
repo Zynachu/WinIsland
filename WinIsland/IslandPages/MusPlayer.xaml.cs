@@ -1,19 +1,11 @@
-using Microsoft.Extensions.Logging;
-using NAudio.Wave;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Runtime.InteropServices;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Controls.Primitives;
 using System.Windows.Media;
 using System.Windows.Media.Animation;
 using System.Windows.Threading;
 using Windows.Media.Control;
-using Windows.Media.Playback;
-using WinIsland.Properties;
 
 namespace WinIsland.IslandPages
 {
@@ -23,28 +15,39 @@ namespace WinIsland.IslandPages
     public partial class MusPlayer : Page
     {
         private bool mediaSessionEmpty = true; // Check if mediaSession is empty or equal to NULL.
-        private bool sliderChangeIgnore = false;
         bool animatedCoverArt = false;
 
         private DispatcherTimer waitForMD = new DispatcherTimer();
         private DispatcherTimer Tick = new DispatcherTimer();
 
         private MainWindow mw = MainWindow.instance;
+        // Slider smoothing (fixes weird bug with some apps)
+        private DateTimeOffset _songLastUpdatedTime;
+        private TimeSpan _songLastKnownPosition;
+        private TimeSpan _songMaxSeekTime;
+        private double _songPlaybackRate = 1.0;
+        private System.Windows.Threading.DispatcherTimer _songTrackTimer;
+
         public MusPlayer()
         {
             InitializeComponent();
-            if(Settings.instance.lastThumbnail != null)
+
+            songProgress.AddHandler(Thumb.DragStartedEvent, new DragStartedEventHandler(SongProgress_DragStarted));
+            songProgress.AddHandler(Thumb.DragCompletedEvent, new DragCompletedEventHandler(SongProgress_DragCompleted));
+
+            _songTrackTimer = new System.Windows.Threading.DispatcherTimer();
+            _songTrackTimer.Interval = TimeSpan.FromMilliseconds(1);
+            _songTrackTimer.Tick += ChromeTrackTimer_Tick;
+
+            if (Settings.instance.lastThumbnail != null)
             {
                 songTitle.Text = Settings.instance.lastSongName;
                 songArtist.Text = Settings.instance.lastArtist;
                 songThumbnail.Source = Helper.ConvertToImageSource(Settings.instance.lastThumbnail);
 
-                sliderChangeIgnore = true;
                 songProgress.Maximum = Settings.instance.lastMaxTick == 0 ? 1 : Settings.instance.lastMaxTick;
                 songProgress.Value = Settings.instance.lastCurTick;
                 songProgressLabel.Content = Settings.instance.lastDuration;
-                sliderChangeIgnore = false; 
-
             }
             MainWindow.instance.busyRing.Visibility = Visibility.Visible;
             getMediaSession();
@@ -87,10 +90,27 @@ namespace WinIsland.IslandPages
                 RepeatBehavior = RepeatBehavior.Forever,
                 EasingFunction = new CubicEase { EasingMode = EasingMode.EaseInOut }
             };
-
-            // 3. Begin the animation on the TranslateTransform's X property
+            
             if(animatedCoverArt) floatAnim.BeginAnimation(TranslateTransform.YProperty, animation);
         }
+
+        private void ChromeTrackTimer_Tick(object? sender, EventArgs e)
+        {
+            if (mw.sessionManager.GetCurrentSession().GetPlaybackInfo().PlaybackStatus == GlobalSystemMediaTransportControlsSessionPlaybackStatus.Paused)
+            {
+                return;
+            }
+            TimeSpan timeElapsedSinceUpdate = DateTimeOffset.UtcNow - _songLastUpdatedTime;
+
+            long extrapolatedTicks = _songLastKnownPosition.Ticks + (long)(timeElapsedSinceUpdate.Ticks * (_songPlaybackRate <= 0.0D ? 1.0D : _songPlaybackRate));
+            TimeSpan calculatedPosition = TimeSpan.FromTicks(extrapolatedTicks);
+
+            if (calculatedPosition > _songMaxSeekTime) calculatedPosition = _songMaxSeekTime;
+            if (calculatedPosition < TimeSpan.Zero) calculatedPosition = TimeSpan.Zero;
+
+            UpdateProgressUI(calculatedPosition, _songMaxSeekTime);
+        }
+
         public void getMediaSession()
         {
             new Thread(startGetSessionThread).Start();
@@ -283,19 +303,32 @@ namespace WinIsland.IslandPages
         {
             // Logging this using the regular logger is NOT a good idea because it can fill up the user's drive with useless logs in the log file.
             //MainWindow.logger.log(sender.GetTimelineProperties().Position.ToString() + "/" + sender.GetTimelineProperties().MaxSeekTime.ToString());
+
+            var timeline = sender.GetTimelineProperties();
+
+            _songLastKnownPosition = timeline.Position;
+            _songLastUpdatedTime = timeline.LastUpdatedTime;
+            _songMaxSeekTime = timeline.MaxSeekTime;
+
+            var playbackInfo = sender.GetPlaybackInfo();
+            _songPlaybackRate = playbackInfo.PlaybackRate ?? 1.0;
+            bool isPlaying = playbackInfo.PlaybackStatus == GlobalSystemMediaTransportControlsSessionPlaybackStatus.Playing;
+
             Dispatcher.Invoke(() =>
             {
-                sliderChangeIgnore = true;
-                songProgress.Maximum = sender.GetTimelineProperties().MaxSeekTime.Ticks;
-                songProgress.Value = sender.GetTimelineProperties().Position.Ticks;
-                songProgressLabel.Content = sender.GetTimelineProperties().Position.ToString(@"hh\:mm\:ss") + " / " + sender.GetTimelineProperties().MaxSeekTime.ToString(@"hh\:mm\:ss");
-                
-                Settings.instance.lastMaxTick = sender.GetTimelineProperties().MaxSeekTime.Ticks;
-                Settings.instance.lastCurTick = sender.GetTimelineProperties().Position.Ticks;
-                Settings.instance.lastDuration = sender.GetTimelineProperties().Position.ToString(@"hh\:mm\:ss") + " / " + sender.GetTimelineProperties().MaxSeekTime.ToString(@"hh\:mm\:ss");
-
-                sliderChangeIgnore = false;
+                UpdateProgressUI(_songLastKnownPosition, _songMaxSeekTime);
             });
+
+            _songTrackTimer.Start();
+        }
+        private void UpdateProgressUI(TimeSpan position, TimeSpan maxSeekTime)
+        {
+            songProgress.Maximum = maxSeekTime.TotalMilliseconds;
+            songProgress.Value = position.TotalMilliseconds;
+            songProgressLabel.Content = $"{position.ToString(@"mm\:ss")} / {maxSeekTime.ToString(@"mm\:ss")}";
+            Settings.instance.lastMaxTick = (long)maxSeekTime.TotalMilliseconds;
+            Settings.instance.lastCurTick = (long)position.TotalMilliseconds;
+            Settings.instance.lastDuration = $"{position.ToString(@"mm\:ss")} / {maxSeekTime.ToString(@"mm\:ss")}";
         }
         private async void MainWindow_MediaPropertiesChanged(GlobalSystemMediaTransportControlsSession sender, MediaPropertiesChangedEventArgs args)
         {
@@ -350,6 +383,25 @@ namespace WinIsland.IslandPages
                     {
                         mw.renderGradient(Settings.instance.thumbnail, "getMusicInfo | " + calledby);
                     }
+                    MainWindow.logger.logVerbose("Music Player App ID: " + sender.SourceAppUserModelId.ToLower());
+
+                    var timeline = sender.GetTimelineProperties();
+
+                    _songLastKnownPosition = timeline.Position;
+                    _songLastUpdatedTime = timeline.LastUpdatedTime;
+                    _songMaxSeekTime = timeline.MaxSeekTime;
+
+                    var playbackInfo = sender.GetPlaybackInfo();
+                    _songPlaybackRate = playbackInfo.PlaybackRate ?? 1.0;
+                    bool isPlaying = playbackInfo.PlaybackStatus == GlobalSystemMediaTransportControlsSessionPlaybackStatus.Playing;
+
+                    Dispatcher.Invoke(() =>
+                    {
+                        UpdateProgressUI(_songLastKnownPosition, _songMaxSeekTime);
+                    });
+
+                    _songTrackTimer.Start();
+
                     MainWindow.logger.logVerbose("Now Playing: " + songInfo.Title);
                     MainWindow.logger.logVerbose("Artist: " + (songInfo.Artist.IsWhiteSpace() ? songInfo.AlbumArtist : songInfo.Artist));
 
@@ -361,7 +413,6 @@ namespace WinIsland.IslandPages
                 {
                     Dispatcher.Invoke(() =>
                     {
-                        sliderChangeIgnore = true;
                         songProgress.Maximum = 1;
                         songProgress.Value = 0;
                         songProgressLabel.Content = "00:00 / 00:00";
@@ -369,8 +420,6 @@ namespace WinIsland.IslandPages
                         Settings.instance.lastMaxTick = 1;
                         Settings.instance.lastCurTick = 0;
                         Settings.instance.lastDuration =  "00:00 / 00:00";
-
-                        sliderChangeIgnore = false;
                     });
 
                     songTitle.Text = "No media playing.";
@@ -418,21 +467,37 @@ namespace WinIsland.IslandPages
             }
         }
 
-        private async void songProgress_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
+        private bool _isUserDragging = false;
+
+        private void SongProgress_DragStarted(object sender, DragStartedEventArgs e)
         {
+            _isUserDragging = true;
+            _songTrackTimer.Stop();
+        }
+
+        private async void SongProgress_DragCompleted(object sender, DragCompletedEventArgs e)
+        {
+            _isUserDragging = false;
+
             try
             {
-                if (mw.sessionManager != null && !sliderChangeIgnore && e.NewValue != e.OldValue)
-                    // Some programs does not support this!
-                    // Do not accept bugs related to applications not changing their timeline with TryChangePlaybackPositionAsync.
-                    // This is because it is NOT related to this app and this function is tested to work on Spotify.
-                    // TODO: Add a notice about this feature that some apps may not support this function.
-                    await mw.sessionManager.GetCurrentSession().TryChangePlaybackPositionAsync((long)songProgress.Value);
-            }
-            catch(NullReferenceException nre)
-            {
+                if (mw.sessionManager != null)
+                {
+                    long ticks = TimeSpan.FromMilliseconds(songProgress.Value).Ticks;
+                    await mw.sessionManager.GetCurrentSession().TryChangePlaybackPositionAsync(ticks);
 
+                    _songLastUpdatedTime = DateTime.Now;
+                    _songLastKnownPosition = TimeSpan.FromMilliseconds(songProgress.Value);
+                }
             }
+            catch (NullReferenceException)
+            {
+            }
+        }
+
+        private async void songProgress_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
+        {
+
         }
     }
 }

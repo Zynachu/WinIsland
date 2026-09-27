@@ -80,13 +80,22 @@ namespace WinIsland
         }
         public void stopCounter(Stopwatch stopwatch, string name, bool forceLog = false)
         {
-            foreach(Stopwatch stp in counters)
+            try
             {
-                if(stp == stopwatch)
+                foreach (Stopwatch stp in counters)
                 {
-                    stp.Stop();
-                    log(name + " took " + stp.Elapsed, forceLog);
+                    if (stp == stopwatch)
+                    {
+                        stp.Stop();
+                        log(name + " took " + stp.Elapsed, forceLog);
+                        counters.Remove(stp);
+                    }
                 }
+            }
+            catch (InvalidOperationException ioe)
+            {
+                stopwatch.Stop();
+                counters.Remove(stopwatch);
             }
         }
     }
